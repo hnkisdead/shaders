@@ -4,6 +4,7 @@ import { Pane } from 'tweakpane'
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
 import fragmentShader from './shader.frag?raw'
 import soundUrl from './sound.flac'
+import { WebMidi } from 'webmidi'
 
 let state = {
     fpsGraph: undefined,
@@ -25,6 +26,7 @@ const params = {
     bColor: { r: 0.25, g: 0.44, b: 0.18 },
     cColor: { r: 0.69, g: 1.33, b: 0.69 },
     dColor: { r: 1.35, g: 1.86, b: 1.21 },
+    param: 0.0,
 }
 
 function uiColorToShaderColor(uiColor) {
@@ -92,9 +94,34 @@ function initUI() {
         state.uniforms.dColor.value = uiColorToShaderColor(event.value)
     })
 
+    pane.addBinding(params, 'param', {
+        readonly: true,
+    })
+
     state = {
         ...state,
         fpsGraph,
+    }
+}
+
+function initMidi() {
+    WebMidi.enable()
+        .then(onEnabled)
+        .catch(err => console.error(err))
+
+    function onEnabled() {
+        if (WebMidi.inputs.length < 1) {
+            console.log('There is no MIDI devices')
+            return
+        }
+
+        const mySynth = WebMidi.inputs[0]
+
+        mySynth.addListener('controlchange', e => {
+            if (e.controller.number !== 18) return
+            params.param = e.value
+            state.uniforms.param.value = e.value
+        })
     }
 }
 
@@ -146,13 +173,12 @@ function initScene() {
         iResolution: {
             value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1),
         },
-        sound1: { value: 0 },
-        sound2: { value: 0 },
         sound: { value: new THREE.Vector2(0, 0) },
         aColor: { value: uiColorToShaderColor(params.aColor) },
         bColor: { value: uiColorToShaderColor(params.bColor) },
         cColor: { value: uiColorToShaderColor(params.cColor) },
         dColor: { value: uiColorToShaderColor(params.dColor) },
+        param: { value: 0 },
     }
 
     scene.add(
@@ -249,6 +275,7 @@ function start() {
 }
 
 initUI()
+initMidi()
 initScene()
 initSound()
 initCanvas()
