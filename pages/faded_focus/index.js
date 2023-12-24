@@ -60,9 +60,7 @@ function initSound() {
     const sound = new THREE.Audio(listener)
 
     if (params.liveMode) {
-        navigator.mediaDevices
-            .getUserMedia({ audio: true, video: false })
-            .then(handleSuccess)
+        navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(handleSuccess)
 
         function handleSuccess(stream) {
             let source = listener.context.createMediaStreamSource(stream)
@@ -122,11 +120,7 @@ function initScene() {
         'resize',
         function () {
             camera.updateProjectionMatrix()
-            uniforms.iResolution.value.set(
-                window.innerWidth,
-                window.innerHeight,
-                1,
-            )
+            uniforms.iResolution.value.set(window.innerWidth, window.innerHeight, 1)
             renderer.setSize(window.innerWidth, window.innerHeight)
         },
         false,
@@ -171,12 +165,7 @@ function visualizeSpectrogram(data) {
         const g = 106 // - barHeight / 5
         const b = 182 // - barHeight / 3
         state.canvasCtx.fillStyle = `rgb(${r}, ${g}, ${b})`
-        state.canvasCtx.fillRect(
-            x,
-            state.canvas.height - barHeight / 2,
-            barWidth,
-            barHeight / 2,
-        )
+        state.canvasCtx.fillRect(x, state.canvas.height - barHeight / 2, barWidth, barHeight / 2)
 
         x += barWidth + 1
     }
