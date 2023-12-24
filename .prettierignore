@@ -1,0 +1,4 @@
+dist
+*.vert
+*.frag
+README.md

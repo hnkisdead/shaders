@@ -1,8 +1,19 @@
 {
-  "dependencies": {
-    "three": "^0.159.0"
-  },
-  "devDependencies": {
-    "vite": "^5.0.10"
-  }
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "format": "prettier --write .",
+        "prepare": "husky install"
+    },
+    "dependencies": {
+        "three": "^0.159.0",
+        "tweakpane": "^4.0.3"
+    },
+    "devDependencies": {
+        "@tweakpane/core": "^2.0.3",
+        "husky": "^8.0.0",
+        "prettier": "3.1.1",
+        "vite": "^5.0.10"
+    }
 }
