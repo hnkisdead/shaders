@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import vertexShader from './shaders/vertexShader.glsl?raw'
-import fragmentShader from './shaders/fragmentShader.glsl?raw'
+import vertexShader from './shader.vert?raw'
+import fragmentShader from './shader.frag?raw'
 
 const scene = new THREE.Scene()
 
@@ -12,7 +12,9 @@ document.body.appendChild(renderer.domElement)
 
 const uniforms = {
     iTime: { value: 0 },
-    iResolution: { value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1) },
+    iResolution: {
+        value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1),
+    },
 }
 
 const plane = new THREE.PlaneGeometry(2, 2)
