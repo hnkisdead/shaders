@@ -1,10 +1,12 @@
 import * as THREE from 'three'
 import vertexShader from './shader.vert?raw'
 import { Pane } from 'tweakpane'
+import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
 import fragmentShader from './shader.frag?raw'
 import soundUrl from './sound.flac'
 
 let state = {
+    fpsGraph: undefined,
     scene: undefined,
     camera: undefined,
     renderer: undefined,
@@ -19,21 +21,38 @@ let state = {
 const params = {
     visualizeSpectrogram: false,
     liveMode: true,
+    aColor: { r: 0.63, g: -0.36, b: 0.63 },
+    bColor: { r: 0.25, g: 0.44, b: 0.18 },
+    cColor: { r: 0.69, g: 1.33, b: 0.69 },
+    dColor: { r: 1.35, g: 1.86, b: 1.21 },
+}
+
+function uiColorToShaderColor(uiColor) {
+    return new THREE.Vector3(uiColor.r, uiColor.g, uiColor.b)
 }
 
 function initUI() {
     const pane = new Pane({ title: 'Params' })
+    pane.registerPlugin(EssentialsPlugin)
+
+    const fpsGraph = pane.addBlade({
+        view: 'fpsgraph',
+        label: 'FPS',
+        rows: 1,
+    })
+
     pane.addBinding(params, 'visualizeSpectrogram', {
         label: 'Visualize spectrogram',
     })
-    const liveModeBinding = pane.addBinding(params, 'liveMode', {
+
+    const liveMode = pane.addBinding(params, 'liveMode', {
         label: 'Live Mode',
     })
     const playButton = pane.addButton({
         title: 'Play',
         disabled: true,
     })
-    liveModeBinding.on('change', () => {
+    liveMode.on('change', () => {
         if (params.liveMode && state.sound.isPlaying) {
             state.sound.stop()
         }
@@ -49,6 +68,34 @@ function initUI() {
             playButton.title = 'Stop'
         }
     })
+
+    pane.addBlade({ view: 'separator' })
+
+    pane.addBinding(params, 'aColor', {
+        color: { type: 'float' },
+    }).on('change', event => {
+        state.uniforms.aColor.value = uiColorToShaderColor(event.value)
+    })
+    pane.addBinding(params, 'bColor', {
+        color: { type: 'float' },
+    }).on('change', event => {
+        state.uniforms.bColor.value = uiColorToShaderColor(event.value)
+    })
+    pane.addBinding(params, 'cColor', {
+        color: { type: 'float' },
+    }).on('change', event => {
+        state.uniforms.cColor.value = uiColorToShaderColor(event.value)
+    })
+    pane.addBinding(params, 'dColor', {
+        color: { type: 'float' },
+    }).on('change', event => {
+        state.uniforms.dColor.value = uiColorToShaderColor(event.value)
+    })
+
+    state = {
+        ...state,
+        fpsGraph,
+    }
 }
 
 function initSound() {
@@ -101,6 +148,11 @@ function initScene() {
         },
         sound1: { value: 0 },
         sound2: { value: 0 },
+        sound: { value: new THREE.Vector2(0, 0) },
+        aColor: { value: uiColorToShaderColor(params.aColor) },
+        bColor: { value: uiColorToShaderColor(params.bColor) },
+        cColor: { value: uiColorToShaderColor(params.cColor) },
+        dColor: { value: uiColorToShaderColor(params.dColor) },
     }
 
     scene.add(
@@ -176,12 +228,13 @@ function start() {
         return
     }
 
-    requestAnimationFrame(start)
-
+    state.fpsGraph.begin()
     const data = state.analyser.getFrequencyData()
     state.uniforms.iTime.value = state.clock.getElapsedTime()
-    state.uniforms.sound1.value = (data[0] + data[1] + data[3]) / 255 / 3
-    state.uniforms.sound2.value = (data[110] + data[111] + data[112]) / 255 / 3
+    state.uniforms.sound.value.set(
+        (data[0] + data[1] + data[3]) / 255 / 3,
+        (data[110] + data[111] + data[112]) / 255 / 3,
+    )
 
     if (params.visualizeSpectrogram) {
         visualizeSpectrogram(data)
@@ -190,6 +243,9 @@ function start() {
     }
 
     state.renderer.render(state.scene, state.camera)
+    state.fpsGraph.end()
+
+    requestAnimationFrame(start)
 }
 
 initUI()

@@ -1,77 +1,53 @@
 uniform vec3 iResolution;
 uniform float iTime;
-uniform float sound1;
-uniform float sound2;
-
-//rgb(255, 229, 229)
-vec3 backgroundColor = vec3(1.0, 0.898, 0.898);
-// rgb(117, 106, 182)
-vec3 shapeColor = vec3(0.459, 0.416, 0.714);
-// rgb(172, 135, 197)
-vec3 shapeColor1 = vec3(0.674, 0.529, 0.773);
-
-float rand(vec2 p) {
-    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-}
+uniform vec2 sound;
+uniform vec3 aColor;
+uniform vec3 bColor;
+uniform vec3 cColor;
+uniform vec3 dColor;
 
 vec3 palette(float t) {
-    //    vec3 a = vec3(0.698, 0.468, 0.848);
-    //    vec3 b = vec3(0.428, -0.092, 0.500);
-    //    vec3 c = vec3(0.608, 2.898, 0.667);
-    //    vec3 d = vec3(0.628, -0.362, 0.333);
-    vec3 a = vec3(0.630, -0.362, 0.630);
-    vec3 b = vec3(0.248, 0.440, 0.176);
-    vec3 c = vec3(0.690, 1.331, 0.690);
-    vec3 d = vec3(1.348, 1.858, 1.208);
-    return a + b * cos(6.28318 * (c * t + d));
+    return aColor + bColor * cos(6.28318 * (cColor * t + dColor));
 }
 
-vec4 circle(vec2 uv, vec2 pos, float r, float blur, vec3 color) {
-    float d = length(uv - pos);
-    float c = smoothstep(r, r - blur, d);
+vec4 circle(vec2 r_uv, float radius, float blur) {
+    vec3 color = palette(r_uv.x - iTime / 4.0);
+    float c = smoothstep(radius, radius - blur, floor(r_uv.x));
     return vec4(color, c);
 }
 
-vec4 blob(vec2 uv, vec2 pos, float s, float blur, vec3 color) {
-    vec2 i = uv - pos;
+vec4 blob(vec2 uv, vec2 r_uv, float s, float blur) {
+    vec3 color = palette(uv.x + 1.2);
 
-    float r = length(i) * 2.0;
-    float a = atan(i.y, i.x);
+    float v = floor(r_uv.x);
+    r_uv.x = fract(r_uv.x);
 
-    vec3 color1 = palette(r + 1.2);
-
-    float v = floor(r);
-    r = fract(r);
-
-    float c = cos(a * 21.0 + iTime) * sin(a * 3.0 + iTime * v);
-    c *= sin(a) - 0.5;
-    c += sin(a) - 0.5;
+    float c = cos(r_uv.y * 21.0 + iTime);
+    c *= sin(r_uv.y * 3.0 + iTime * v);
+    c *= sin(r_uv.y) - 0.5;
+    c += sin(r_uv.y) - 0.5;
     c *= s / 2.0;
 
-    c = smoothstep(c, c - blur, r);
+    c = smoothstep(c, c - blur, r_uv.x);
 
-    return vec4(color1, c);
+    return vec4(color, c);
 }
 
-vec4 blob2(vec2 uv, vec2 pos, float s, float blur, vec3 color) {
-    vec2 i = uv - pos;
+vec4 blob2(vec2 r_uv, float s, float blur) {
+    vec3 color = palette(r_uv.x + 3.14);
 
-    float r = length(i) * 2.0;
-    float a = atan(i.y, i.x);
+    float v = floor(r_uv.x);
+    r_uv.x = fract(r_uv.x);
 
-    vec3 color1 = palette(r + 3.14);
-
-    float v = floor(r);
-    r = fract(r);
-
-    float c = abs(cos(a * 21.0 + iTime)) * sin(a * 3.0 + iTime * v);
-    c *= sin(a) - 0.5;
-    c += sin(a + 3.14) - 0.5;
+    float c = abs(cos(r_uv.y * 21.0 + iTime));
+    c *= sin(r_uv.y * 3.0 + iTime * v);
+    c *= sin(r_uv.y) - 0.5;
+    c += sin(r_uv.y + 3.14) - 0.5;
     c *= s / 2.0;
 
-    c = smoothstep(c, c - blur, r);
+    c = smoothstep(c, c - blur, r_uv.x);
 
-    return vec4(color1, c);
+    return vec4(color, c);
 }
 
 
@@ -83,18 +59,18 @@ void main() {
 
     float r = length(uv) * 2.0;
     float a = atan(uv.y, uv.x);
+    vec2 r_uv = vec2(r, a);
+
     float fr = fract(r);
-    vec3 color1 = palette(r + iTime * .4 + fr * 0.4);
+    vec3 color = palette(floor(uv.y) + iTime * .4 + fr * 0.4);
 
-    float s1 = pow(sound1, 4.0);
-    float s2 = pow(sound2, 4.0);
-    vec4 c1 = blob(uv, vec2(0.0), 0.7 + s1, 0.01, shapeColor);
-    //    c1 = vec4(vec3(0.0), 0.0);
-    vec4 c2 = blob2(uv, vec2(0.0), 0.7 + s2, 0.01, shapeColor);
-    vec4 c3 = circle(uv, vec2(0.0), 0.1, 0.0, color1);
-    //    c3 = vec4(vec3(0.0), 0.0);
+    float s1 = pow(sound[0], 4.0);
+    float s2 = pow(sound[1], 4.0);
+    vec4 c1 = blob(uv, r_uv, 0.7 + s1, 0.01);
+    vec4 c2 = blob2(r_uv, 0.7 + s2, 0.01);
+    vec4 c3 = circle(r_uv, 0.2, 0.0);
 
-    vec4 finalColor = mix(vec4(color1, 1.0), c1, c1.a);
+    vec4 finalColor = mix(vec4(color, 1.0), c1, c1.a);
     finalColor = mix(finalColor, c2, c2.a);
     finalColor = mix(finalColor, c3, c3.a);
 
