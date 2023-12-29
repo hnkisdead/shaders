@@ -8,6 +8,7 @@
     },
     "dependencies": {
         "@tweakpane/plugin-essentials": "^0.2.1",
+        "robot3": "^0.4.1",
         "three": "^0.159.0",
         "tweakpane": "^4.0.3",
         "webmidi": "^3.1.8"

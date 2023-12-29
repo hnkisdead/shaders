@@ -169,8 +169,8 @@ function initScene() {
     document.body.appendChild(renderer.domElement)
 
     const uniforms = {
-        iTime: { value: 0 },
-        iResolution: {
+        u_time: { value: 0 },
+        u_resolution: {
             value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1),
         },
         sound: { value: new THREE.Vector2(0, 0) },
@@ -198,7 +198,7 @@ function initScene() {
         'resize',
         function () {
             camera.updateProjectionMatrix()
-            uniforms.iResolution.value.set(window.innerWidth, window.innerHeight, 1)
+            uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight, 1)
             renderer.setSize(window.innerWidth, window.innerHeight)
         },
         false,
@@ -256,7 +256,7 @@ function start() {
 
     state.fpsGraph.begin()
     const data = state.analyser.getFrequencyData()
-    state.uniforms.iTime.value = state.clock.getElapsedTime()
+    state.uniforms.u_time.value = state.clock.getElapsedTime()
     state.uniforms.sound.value.set(
         (data[0] + data[1] + data[3]) / 255 / 3,
         (data[110] + data[111] + data[112]) / 255 / 3,

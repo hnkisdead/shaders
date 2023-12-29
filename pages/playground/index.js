@@ -26,6 +26,7 @@ const material = new THREE.ShaderMaterial({
 scene.add(new THREE.Mesh(plane, material))
 
 window.addEventListener('resize', onWindowResize, false)
+
 function onWindowResize() {
     camera.updateProjectionMatrix()
     uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight, 1)
@@ -39,10 +40,6 @@ function animate() {
 
     uniforms.u_time.value = clock.getElapsedTime()
 
-    render()
-}
-
-function render() {
     renderer.render(scene, camera)
 }
 
